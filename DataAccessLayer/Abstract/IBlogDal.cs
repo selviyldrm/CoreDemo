@@ -9,6 +9,7 @@ namespace DataAccessLayer.Abstract
 {
   public  interface IBlogDal :IGenericDal<Blog>
     {
-      
+        //sadece bloglara özeldir
+        List<Blog> GetListWithCategory();
     }
 }
