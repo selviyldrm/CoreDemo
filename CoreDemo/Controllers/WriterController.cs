@@ -1,7 +1,14 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using BusinessLayer.Concrete;
+using BusinessLayer.ValidationRules;
+using CoreDemo.Models;
+using DataAccessLayer.EntityFramework;
+using EntityLayer.Concrete;
+using FluentValidation.Results;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -12,7 +19,7 @@ namespace CoreDemo.Controllers
     {
         //Authorize=>yetkilendirme alanları.Sistemi giriş yapmamış kişilerin
         ////erişimini engellemek için kullanılan bir attribute'dır.
-
+        WriterManager wm = new WriterManager(new EfWriterRepository());
 
         public IActionResult Index()
         {
@@ -41,6 +48,66 @@ namespace CoreDemo.Controllers
         public PartialViewResult WriterFooterPartial()
         {
             return PartialView();
+        }
+        [AllowAnonymous]
+        [HttpGet]
+        public IActionResult WriterEditProfile()
+        {
+            var writervalues = wm.TGetById(1);
+            return View(writervalues);
+        }
+        [AllowAnonymous]
+        [HttpPost]
+        public IActionResult WriterEditProfile(Writer p, string passwordAgain)
+        {
+            WriterValidator wl = new WriterValidator();
+            ValidationResult results = wl.Validate(p);
+            if (results.IsValid && p.WriterPassword == passwordAgain)
+            {
+                p.WriterStatus = true;
+                wm.TUpdate(p);
+                return RedirectToAction("Index", "Dashboard");
+            }
+            else if (!results.IsValid)
+            {
+                foreach (var item in results.Errors)
+                {
+                    ModelState.AddModelError(item.PropertyName, item.ErrorMessage);
+                }
+            }
+            else
+            {
+                ModelState.AddModelError("WriterPassword", "Girdiğiniz Şifreler Eşleşmiyor! Lütfen Tekrar Deneyiniz");
+            }
+            return View();
+        }
+        [AllowAnonymous]
+        [HttpGet]
+        public IActionResult WriterAdd()
+        {
+            return View();
+        }
+        [AllowAnonymous]
+        [HttpPost]
+        public IActionResult WriterAdd(AddProfileImage addProfileImage)
+        {
+            Writer w = new Writer();
+            if (addProfileImage.WriterImage!=null)
+            {
+                var extension = Path.GetExtension(addProfileImage.WriterImage.FileName);
+                var newimagename = Guid.NewGuid() + extension;
+                var location = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/WriterImageFiles/", newimagename);
+                var stream = new FileStream(location, FileMode.Create);
+                addProfileImage.WriterImage.CopyTo(stream);
+                w.WriterImage = newimagename;
+            }
+            w.WriterMail = addProfileImage.WriterMail;
+            w.WriterName = addProfileImage.WriterName;
+            w.WriterPassword = addProfileImage.WriterPassword;
+            w.WriterStatus = true;
+            w.WriterAbout = addProfileImage.WriterAbout;
+            wm.TAdd(w);
+            return RedirectToAction("Index", "Dashboard");
         }
     }
 }

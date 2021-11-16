@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using BusinessLayer.Concrete;
+using DataAccessLayer.EntityFramework;
+using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -6,11 +8,17 @@ using System.Threading.Tasks;
 
 namespace CoreDemo.ViewComponents.Writer
 {
-    public class WriterNatification :ViewComponent
+    public class WriterNatification : ViewComponent
     {
-        public IViewComponentResult Invoke()
+        NotificationManager nm = new NotificationManager(new EfNotificationRepository());
+        public IViewComponentResult Invoke(int id)
         {
-            return View();
+            var values = nm.GetList(x => x.NotificationStatus == true);
+            if (values.Count() > 3)
+            {
+                values = values.Take(5).ToList();
+            }
+            return View(values);
         }
     }
 }

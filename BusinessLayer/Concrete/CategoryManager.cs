@@ -4,6 +4,7 @@ using EntityLayer.Concrete;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -17,29 +18,37 @@ namespace BusinessLayer.Concrete
         {
             _categoryDal = categoryDal;
         }
-        public void CategoryAdd(Category category)
-        {
-            _categoryDal.Insert(category);
-        }
 
-        public void CategoryDelete(Category category)
-        {
-            _categoryDal.Delete(category);
-        }
 
-        public void CategoryUpdate(Category category)
-        {
-            _categoryDal.Update(category);
-        }
-
-        public Category GetByID(int id)
+        public Category TGetById(int id)
         {
             return _categoryDal.GetByID(id);
         }
 
+     
         public List<Category> GetList()
         {
-            return _categoryDal.GetListAll();
+           return _categoryDal.GetListAll();
+        }
+
+        public void TAdd(Category t)
+        {
+            _categoryDal.Insert(t);
+        }
+
+        public void TDelete(Category t)
+        {
+            _categoryDal.Delete(t);
+        }
+
+        public void TUpdate(Category t)
+        {
+            _categoryDal.Update(t);
+        }
+
+        public List<Category> GetList(Expression<Func<Category, bool>> filter = null)
+        {
+            return _categoryDal.GetListAll(filter);
         }
     }
 }

@@ -11,5 +11,6 @@ namespace DataAccessLayer.Abstract
     {
         //sadece bloglara özeldir
         List<Blog> GetListWithCategory();
+        List<Blog> GetListWithCategoryByWriter(int id);
     }
 }
