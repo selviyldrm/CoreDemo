@@ -12,7 +12,7 @@ namespace CoreDemo.Controllers
 {
     public class DashboardController : Controller
     {
-        [AllowAnonymous]
+        
         public IActionResult Index()
         {
             BlogManager blogManager = new BlogManager(new EfBlogRepository());

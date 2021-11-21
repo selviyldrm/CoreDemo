@@ -1,5 +1,6 @@
 ﻿using BusinessLayer.Concrete;
 using BusinessLayer.ValidationRules;
+using DataAccessLayer.Concrete;
 using DataAccessLayer.EntityFramework;
 using EntityLayer.Concrete;
 using FluentValidation.Results;
@@ -14,7 +15,7 @@ using System.Threading.Tasks;
 
 namespace CoreDemo.Controllers
 {
-    [AllowAnonymous]
+
     public class BlogController : Controller
     {
         BlogManager bm = new BlogManager(new EfBlogRepository());
@@ -32,35 +33,41 @@ namespace CoreDemo.Controllers
         }
         public IActionResult BlogListByWriter()
         {
-          var values= bm.GetListWithCategoryByWriterBm(1);
+            var usermail = User.Identity.Name;
+            Context c = new Context();
+            var writerid = c.Writers.Where(x => x.WriterMail == usermail).Select(y => y.WriterID).FirstOrDefault();
+            var values = bm.GetListWithCategoryByWriterBm(writerid);
             return View(values);
         }
         [HttpGet]
         public IActionResult BlogAdd()
         {
             List<SelectListItem> categoryvalues = (from x in cm.GetList()
-                                                 select new SelectListItem
-                                                 {
-                                                     Text=x.CategoryName,
-                                                     Value=x.CategoryID.ToString()
-                                                 }).ToList();
+                                                   select new SelectListItem
+                                                   {
+                                                       Text = x.CategoryName,
+                                                       Value = x.CategoryID.ToString()
+                                                   }).ToList();
             ViewBag.cv = categoryvalues;
             return View();
         }
         [HttpPost]
         public IActionResult BlogAdd(Blog p)
         {
+            var usermail = User.Identity.Name;
+            Context c = new Context();
+            var writerid = c.Writers.Where(x => x.WriterMail == usermail).Select(y => y.WriterID).FirstOrDefault();
             BlogValidator bv = new BlogValidator();
             ValidationResult results = bv.Validate(p);
-            if (results.IsValid )
+            if (results.IsValid)
             {
                 p.BlogStatus = true;
                 p.BlogCreateDate = DateTime.Parse(DateTime.Now.ToShortDateString());
-                p.WriterID = 1;
+                p.WriterID = writerid;
                 bm.TAdd(p);
                 return RedirectToAction("BlogListByWriter", "Blog");
             }
-            else 
+            else
             {
                 foreach (var item in results.Errors)
                 {
@@ -92,8 +99,11 @@ namespace CoreDemo.Controllers
         [HttpPost]
         public IActionResult EditBlog(Blog p)
         {
+            var usermail = User.Identity.Name;
+            Context c = new Context();
+            var writerid = c.Writers.Where(x => x.WriterMail == usermail).Select(y => y.WriterID).FirstOrDefault();
             var value = bm.TGetById(p.BlogID);
-            p.WriterID = 1;
+            p.WriterID = writerid;
             p.BlogID = value.BlogID;
             p.BlogCreateDate = value.BlogCreateDate;
             p.BlogStatus = true;
