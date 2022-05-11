@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace DataAccessLayer.Concrete
 {
-   public class Context:IdentityDbContext<AppUser> //dbcontext sınıfından miras alır ve context sınıfına ait bütün özellikleri kullanabilir
+   public class Context:IdentityDbContext<AppUser,AppRole,int> //dbcontext sınıfından miras alır ve context sınıfına ait bütün özellikleri kullanabilir
     {
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
