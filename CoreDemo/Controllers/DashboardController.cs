@@ -12,14 +12,21 @@ namespace CoreDemo.Controllers
 {
     public class DashboardController : Controller
     {
+        BlogManager blogManager = new BlogManager(new EfBlogRepository());
         
         public IActionResult Index()
         {
-            BlogManager blogManager = new BlogManager(new EfBlogRepository());
+            Context c = new Context();
+            var username = User.Identity.Name;
+            ViewBag.veri = username;
+            var usermail = c.Users.Where(x => x.UserName == username).Select(y => y.Email).FirstOrDefault();
+            var writerid = c.Writers.Where(x => x.WriterMail == usermail).Select(y => y.WriterID).FirstOrDefault();
+
+            
             CategoryManager categoryManager = new CategoryManager(new EfCategoryRepository());
-            ViewBag.v1 = blogManager.GetList(x => x.BlogStatus == true).Count();
-            ViewBag.v2 = blogManager.GetBlogListByWriter(1).Count();
-            ViewBag.v3 = categoryManager.GetList().Count();
+            ViewBag.v1 =c.Blogs.Count().ToString();
+            ViewBag.v2 = c.Blogs.Where(x => x.WriterID == writerid).Count();
+            ViewBag.v3 = c.Categories.Count();
             return View();
         }
     }

@@ -6,6 +6,7 @@ using DataAccessLayer.EntityFramework;
 using EntityLayer.Concrete;
 using FluentValidation.Results;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
@@ -21,7 +22,8 @@ namespace CoreDemo.Controllers
         //Authorize=>yetkilendirme alanları.Sistemi giriş yapmamış kişilerin
         ////erişimini engellemek için kullanılan bir attribute'dır.
         WriterManager wm = new WriterManager(new EfWriterRepository());
-        
+
+        private readonly UserManager<AppUser> _userManager;
         public IActionResult Index()
         {
             var usermail = User.Identity.Name;
@@ -59,11 +61,20 @@ namespace CoreDemo.Controllers
         [HttpGet]
         public IActionResult WriterEditProfile()
         {
-            var usermail = User.Identity.Name;
+            UserManager userManager = new UserManager(new EfUserRepository());
             Context c = new Context();
-            var writerid = c.Writers.Where(x => x.WriterMail == usermail).Select(y => y.WriterID).FirstOrDefault();
-           var writervalues = wm.TGetById(writerid);
-            return View(writervalues);
+            var username = User.Identity.Name;
+            var usermail = c.Users.Where(x => x.UserName == username).Select(y => y.Email).FirstOrDefault();
+            var id = c.Users.Where(x => x.Email == usermail).Select(y => y.Id).FirstOrDefault();
+            var values = userManager.TGetById(id);
+            return View(values);
+
+           // 
+           // var username = User.Identity.Name;
+           // var usermail = c.Users.Where(x => x.UserName == username).Select(y => y.Email).FirstOrDefault();
+           // var writerid = c.Writers.Where(x => x.WriterMail == usermail).Select(y => y.WriterID).FirstOrDefault();
+           //var writervalues = wm.TGetById(writerid);
+           // return View(writervalues);
         }
        
         [HttpPost]
